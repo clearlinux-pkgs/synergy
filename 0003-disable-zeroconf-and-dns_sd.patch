@@ -1,0 +1,213 @@
+From 6b84ba97699686cc9ede6d923ad035e2e3029d69 Mon Sep 17 00:00:00 2001
+From: "Brett T. Warden" <brett.t.warden@intel.com>
+Date: Mon, 9 Jul 2018 13:29:46 -0700
+Subject: [PATCH] disable zeroconf and dns_sd
+
+---
+ src/gui/CMakeLists.txt      |  4 +++-
+ src/gui/gui.pro             | 12 ------------
+ src/gui/src/MainWindow.cpp  | 39 -------------------------------------
+ src/gui/src/MainWindow.h    |  6 ------
+ src/gui/src/SetupWizard.cpp |  3 ---
+ 5 files changed, 3 insertions(+), 61 deletions(-)
+
+diff --git a/src/gui/CMakeLists.txt b/src/gui/CMakeLists.txt
+index a612afc..21e5dfc 100644
+--- a/src/gui/CMakeLists.txt
++++ b/src/gui/CMakeLists.txt
+@@ -11,6 +11,9 @@ file (GLOB LEGACY_GUI_UI_FILES src/*.ui)
+ file (GLOB LEGACY_ACTIVATION_FILES src/*Activation* src/*License*)
+ file (GLOB LEGACY_ZEROCONF_FILES src/Zeroconf*)
+ 
++# Disable Zeroconf
++list (REMOVE_ITEM LEGACY_GUI_SOURCE_FILES ${LEGACY_ZEROCONF_FILES})
++
+ if (SYNERGY_ENTERPRISE)
+     list (REMOVE_ITEM LEGACY_GUI_SOURCE_FILES ${LEGACY_ACTIVATION_FILES})
+     list (REMOVE_ITEM LEGACY_GUI_UI_FILES ${LEGACY_ACTIVATION_FILES})
+@@ -45,7 +48,6 @@ if (WIN32)
+     endif()
+ 
+ elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+-    target_link_libraries (synergy dns_sd)
+ endif()
+ endif()
+ 
+diff --git a/src/gui/gui.pro b/src/gui/gui.pro
+index 176d685..2731a8e 100644
+--- a/src/gui/gui.pro
++++ b/src/gui/gui.pro
+@@ -51,11 +51,6 @@ SOURCES += src/main.cpp \
+     src/Ipc.cpp \
+     src/SynergyLocale.cpp \
+     src/QUtility.cpp \
+-    src/ZeroconfServer.cpp \
+-    src/ZeroconfThread.cpp \
+-    src/ZeroconfRegister.cpp \
+-    src/ZeroconfBrowser.cpp \
+-    src/ZeroconfService.cpp \
+     src/DataDownloader.cpp \
+     src/AddClientDialog.cpp \
+     src/CommandProcess.cpp \
+@@ -96,12 +91,6 @@ HEADERS += src/MainWindow.h \
+     src/Ipc.h \
+     src/SynergyLocale.h \
+     src/QUtility.h \
+-    src/ZeroconfServer.h \
+-    src/ZeroconfThread.h \
+-    src/ZeroconfRegister.h \
+-    src/ZeroconfRecord.h \
+-    src/ZeroconfBrowser.h \
+-    src/ZeroconfService.h \
+     src/DataDownloader.h \
+     src/AddClientDialog.h \
+     src/CommandProcess.h \
+@@ -128,7 +117,6 @@ macx {
+     QMAKE_BUNDLE_DATA += QSYNERGY_ICON
+     LIBS += $$MACX_LIBS
+ }
+-unix:!macx:LIBS += -ldns_sd
+ debug { 
+     OBJECTS_DIR = tmp/debug
+     MOC_DIR = tmp/debug
+diff --git a/src/gui/src/MainWindow.cpp b/src/gui/src/MainWindow.cpp
+index 083fbb9..04d7ac6 100644
+--- a/src/gui/src/MainWindow.cpp
++++ b/src/gui/src/MainWindow.cpp
+@@ -27,7 +27,6 @@
+ #include "ServerConfigDialog.h"
+ #include "SettingsDialog.h"
+ #include "ActivationDialog.h"
+-#include "ZeroconfService.h"
+ #include "DataDownloader.h"
+ #include "CommandProcess.h"
+ #include "LicenseManager.h"
+@@ -99,9 +98,6 @@ MainWindow::MainWindow (QSettings& settings, AppConfig& appConfig,
+     m_pMenuEdit(NULL),
+     m_pMenuWindow(NULL),
+     m_pMenuHelp(NULL),
+-#ifndef SYNERGY_ENTERPRISE
+-    m_pZeroconfService(NULL),
+-#endif
+     m_pDataDownloader(NULL),
+     m_DownloadMessageBox(NULL),
+     m_pCancelButton(NULL),
+@@ -198,10 +194,6 @@ MainWindow::~MainWindow()
+ 
+     saveSettings();
+ 
+-#ifndef SYNERGY_ENTERPRISE
+-    delete m_pZeroconfService;
+-#endif
+-
+     if (m_DownloadMessageBox != NULL) {
+         delete m_DownloadMessageBox;
+     }
+@@ -1067,26 +1059,6 @@ void MainWindow::changeEvent(QEvent* event)
+     }
+ }
+ 
+-#ifndef SYNERGY_ENTERPRISE
+-void MainWindow::updateZeroconfService()
+-{
+-    QMutexLocker locker(&m_UpdateZeroconfMutex);
+-
+-    if (isBonjourRunning()) {
+-        if (!m_AppConfig->wizardShouldRun()) {
+-            if (m_pZeroconfService) {
+-                delete m_pZeroconfService;
+-                m_pZeroconfService = NULL;
+-            }
+-
+-            if (m_AppConfig->autoConfig() || synergyType() == synergyServer) {
+-                m_pZeroconfService = new ZeroconfService(this);
+-            }
+-        }
+-    }
+-}
+-#endif
+-
+ void MainWindow::serverDetected(const QString name)
+ {
+     if (m_pComboServerList->findText(name) == -1) {
+@@ -1189,21 +1161,11 @@ MainWindow::licenseManager() const
+ void MainWindow::on_m_pGroupClient_toggled(bool on)
+ {
+     m_pGroupServer->setChecked(!on);
+-#ifndef SYNERGY_ENTERPRISE
+-    if (on) {
+-        updateZeroconfService();
+-    }
+-#endif
+ }
+ 
+ void MainWindow::on_m_pGroupServer_toggled(bool on)
+ {
+     m_pGroupClient->setChecked(!on);
+-#ifndef SYNERGY_ENTERPRISE
+-    if (on) {
+-        updateZeroconfService();
+-    }
+-#endif
+ }
+ 
+ bool MainWindow::on_m_pButtonBrowseConfigFile_clicked()
+@@ -1501,7 +1463,6 @@ void MainWindow::on_m_pCheckBoxAutoConfig_toggled(bool checked)
+ 
+     m_pLineEditHostname->setDisabled(checked);
+     appConfig().setAutoConfig(checked);
+-    updateZeroconfService();
+ 
+     if (!checked) {
+         m_pComboServerList->clear();
+diff --git a/src/gui/src/MainWindow.h b/src/gui/src/MainWindow.h
+index eff397b..1759b8e 100644
+--- a/src/gui/src/MainWindow.h
++++ b/src/gui/src/MainWindow.h
+@@ -54,7 +54,6 @@ class QAbstractButton;
+ class LogDialog;
+ class QSynergyApplication;
+ class SetupWizard;
+-class ZeroconfService;
+ class DataDownloader;
+ class CommandProcess;
+ class SslCertificate;
+@@ -122,7 +121,6 @@ class MainWindow : public QMainWindow, public Ui::MainWindowBase
+         void serverDetected(const QString name);
+         void updateLocalFingerprint();
+ #ifndef SYNERGY_ENTERPRISE
+-        void updateZeroconfService();
+         LicenseManager& licenseManager() const;
+         int raiseActivationDialog();
+ #endif
+@@ -226,13 +224,9 @@ public slots:
+         QMenu* m_pMenuEdit;
+         QMenu* m_pMenuWindow;
+         QMenu* m_pMenuHelp;
+-#ifndef SYNERGY_ENTERPRISE
+-        ZeroconfService* m_pZeroconfService;
+-#endif
+         DataDownloader* m_pDataDownloader;
+         QMessageBox* m_DownloadMessageBox;
+         QAbstractButton* m_pCancelButton;
+-        QMutex m_UpdateZeroconfMutex;
+         bool m_SuppressAutoConfigWarning;
+         CommandProcess* m_BonjourInstall;
+         bool m_SuppressEmptyServerWarning;
+diff --git a/src/gui/src/SetupWizard.cpp b/src/gui/src/SetupWizard.cpp
+index 863b2aa..4714a96 100644
+--- a/src/gui/src/SetupWizard.cpp
++++ b/src/gui/src/SetupWizard.cpp
+@@ -126,9 +126,6 @@ void SetupWizard::accept()
+ 
+     if (m_StartMain)
+     {
+-#ifndef SYNERGY_ENTERPRISE
+-        m_MainWindow.updateZeroconfService();
+-#endif
+         m_MainWindow.open();
+     }
+ }
+-- 
+2.18.0
+

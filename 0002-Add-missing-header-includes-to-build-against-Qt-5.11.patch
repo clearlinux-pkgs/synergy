@@ -1,0 +1,41 @@
+From 3b6f2e3f66bb91f11e60f05ec198fd628b61bc05 Mon Sep 17 00:00:00 2001
+From: Jeremy Whiting <jpwhiting@kde.org>
+Date: Sun, 24 Jun 2018 10:22:21 -0600
+Subject: [PATCH 2/2] Add missing header includes to build against Qt 5.11.0
+
+Some Qt gui headers are no longer included when including QtGui
+adding these two missing headers makes Synergy build here on windows.
+---
+ src/gui/src/ActionDialog.cpp    | 2 ++
+ src/gui/src/ScreenSetupView.cpp | 2 ++
+ 2 files changed, 4 insertions(+)
+
+diff --git a/src/gui/src/ActionDialog.cpp b/src/gui/src/ActionDialog.cpp
+index 9495033..8c21cb8 100644
+--- a/src/gui/src/ActionDialog.cpp
++++ b/src/gui/src/ActionDialog.cpp
+@@ -26,6 +26,8 @@
+ #include <QtCore>
+ #include <QtGui>
+ 
++#include <QButtonGroup>
++
+ ActionDialog::ActionDialog(QWidget* parent, ServerConfig& config, Hotkey& hotkey, Action& action) :
+     QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint),
+     Ui::ActionDialogBase(),
+diff --git a/src/gui/src/ScreenSetupView.cpp b/src/gui/src/ScreenSetupView.cpp
+index f26d970..0f0f352 100644
+--- a/src/gui/src/ScreenSetupView.cpp
++++ b/src/gui/src/ScreenSetupView.cpp
+@@ -23,6 +23,8 @@
+ #include <QtCore>
+ #include <QtGui>
+ 
++#include <QHeaderView>
++
+ ScreenSetupView::ScreenSetupView(QWidget* parent) :
+     QTableView(parent)
+ {
+-- 
+2.18.0
+

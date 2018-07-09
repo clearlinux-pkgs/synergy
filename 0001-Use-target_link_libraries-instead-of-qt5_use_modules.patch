@@ -1,0 +1,28 @@
+From 2b2389f8127b52bdd68b41b979610703b3e0cbd3 Mon Sep 17 00:00:00 2001
+From: Jeremy Whiting <jpwhiting@kde.org>
+Date: Sun, 24 Jun 2018 00:31:29 -0600
+Subject: [PATCH 1/2] Use target_link_libraries instead of qt5_use_modules.
+
+Since qt5_use_modules is deprecated in newer cmake versions
+use target_link_libraries with Qt5:: targets instead.
+see: http://doc.qt.io/qt-5/cmake-manual.html
+---
+ src/gui/CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/gui/CMakeLists.txt b/src/gui/CMakeLists.txt
+index 54cafab..5946313 100644
+--- a/src/gui/CMakeLists.txt
++++ b/src/gui/CMakeLists.txt
+@@ -39,7 +39,7 @@ elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+     target_link_libraries (synergy dns_sd)
+ endif()
+ 
+-qt5_use_modules (synergy Core Widgets Network)
++target_link_libraries (synergy Qt5::Core Qt5::Widgets Qt5::Network)
+ target_compile_definitions (synergy PRIVATE -DSYNERGY_VERSION_STAGE="${SYNERGY_VERSION_STAGE}")
+ target_compile_definitions (synergy PRIVATE -DSYNERGY_REVISION="${SYNERGY_REVISION}")
+ 
+-- 
+2.18.0
+
