@@ -7,8 +7,8 @@ libXext.so.6
 libXi.so.6
 libXtst.so.6
 libc.so.6
-libcrypto.so.1.0.0
+libcrypto.so.1.1
 libgcc_s.so.1
 libpthread.so.0
-libssl.so.1.0.0
+libssl.so.1.1
 libstdc++.so.6

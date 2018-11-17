@@ -4,15 +4,15 @@
 #
 Name     : synergy
 Version  : 1.10.1.stable
-Release  : 3
+Release  : 4
 URL      : https://github.com/symless/synergy-core/archive/v1.10.1-stable.tar.gz
 Source0  : https://github.com/symless/synergy-core/archive/v1.10.1-stable.tar.gz
 Summary  : No detailed summary available
 Group    : Development/Tools
 License  : Apache-2.0 BSD-3-Clause GPL-2.0 OpenSSL
-Requires: synergy-bin
-Requires: synergy-data
-Requires: synergy-license
+Requires: synergy-bin = %{version}-%{release}
+Requires: synergy-data = %{version}-%{release}
+Requires: synergy-license = %{version}-%{release}
 BuildRequires : buildreq-cmake
 BuildRequires : buildreq-qmake
 BuildRequires : glibc-dev
@@ -67,15 +67,15 @@ export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C
-export SOURCE_DATE_EPOCH=1537901910
+export SOURCE_DATE_EPOCH=1542434085
 mkdir -p clr-build
 pushd clr-build
 %cmake .. $(grep -v '^#' ../Build.properties | while read variable; do echo "-D${variable// /}"; done)
-make  %{?_smp_mflags}
+make  %{?_smp_mflags} VERBOSE=1
 popd
 
 %install
-export SOURCE_DATE_EPOCH=1537901910
+export SOURCE_DATE_EPOCH=1542434085
 rm -rf %{buildroot}
 mkdir -p %{buildroot}/usr/share/package-licenses/synergy
 cp LICENSE %{buildroot}/usr/share/package-licenses/synergy/LICENSE
@@ -102,16 +102,16 @@ popd
 
 %files data
 %defattr(-,root,root,-)
-%exclude /usr/share/package-licenses/synergy/src_gui_src_LicenseManager.h
 /usr/share/applications/synergy.desktop
 /usr/share/icons/hicolor/scalable/apps/synergy.svg
-/usr/share/package-licenses/synergy/res_License.rtf
-/usr/share/package-licenses/synergy/res_License.tex
 
 %files license
-%defattr(-,root,root,-)
+%defattr(0644,root,root,0755)
+%exclude /usr/share/package-licenses/synergy/src_gui_src_LicenseManager.h
 /usr/share/package-licenses/synergy/LICENSE
 /usr/share/package-licenses/synergy/ext_gmock_COPYING
 /usr/share/package-licenses/synergy/ext_gmock_scripts_generator_COPYING
 /usr/share/package-licenses/synergy/ext_gtest_COPYING
 /usr/share/package-licenses/synergy/ext_openssl_LICENSE
+/usr/share/package-licenses/synergy/res_License.rtf
+/usr/share/package-licenses/synergy/res_License.tex
