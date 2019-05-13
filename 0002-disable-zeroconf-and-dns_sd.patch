@@ -1,17 +1,17 @@
-From bb643a3d0cb27e5658c551c462fc7b3cf2fb8b5f Mon Sep 17 00:00:00 2001
+From 659954bac4e9f4156c29c6532d5b3263ba303310 Mon Sep 17 00:00:00 2001
 From: "Brett T. Warden" <brett.t.warden@intel.com>
-Date: Tue, 25 Sep 2018 11:38:51 -0700
-Subject: [PATCH] disable zeroconf and dns_sd
+Date: Mon, 13 May 2019 15:41:33 -0700
+Subject: [PATCH 2/2] disable zeroconf and dns_sd
 
 ---
  src/gui/CMakeLists.txt     |  4 +++-
  src/gui/gui.pro            | 12 ------------
- src/gui/src/MainWindow.cpp | 31 -------------------------------
+ src/gui/src/MainWindow.cpp | 32 --------------------------------
  src/gui/src/MainWindow.h   |  5 -----
- 4 files changed, 3 insertions(+), 49 deletions(-)
+ 4 files changed, 3 insertions(+), 50 deletions(-)
 
 diff --git a/src/gui/CMakeLists.txt b/src/gui/CMakeLists.txt
-index a612afc2..21e5dfc6 100644
+index a612afc..21e5dfc 100644
 --- a/src/gui/CMakeLists.txt
 +++ b/src/gui/CMakeLists.txt
 @@ -11,6 +11,9 @@ file (GLOB LEGACY_GUI_UI_FILES src/*.ui)
@@ -33,7 +33,7 @@ index a612afc2..21e5dfc6 100644
  endif()
  
 diff --git a/src/gui/gui.pro b/src/gui/gui.pro
-index 176d6851..2731a8ed 100644
+index 176d685..2731a8e 100644
 --- a/src/gui/gui.pro
 +++ b/src/gui/gui.pro
 @@ -51,11 +51,6 @@ SOURCES += src/main.cpp \
@@ -70,7 +70,7 @@ index 176d6851..2731a8ed 100644
      OBJECTS_DIR = tmp/debug
      MOC_DIR = tmp/debug
 diff --git a/src/gui/src/MainWindow.cpp b/src/gui/src/MainWindow.cpp
-index 624d71ba..899cf76e 100644
+index facff7e..8c77424 100644
 --- a/src/gui/src/MainWindow.cpp
 +++ b/src/gui/src/MainWindow.cpp
 @@ -34,7 +34,6 @@
@@ -81,7 +81,7 @@ index 624d71ba..899cf76e 100644
  
  #include <QtCore>
  #include <QtGui>
-@@ -83,7 +82,6 @@ MainWindow::MainWindow (QSettings& settings, AppConfig& appConfig,
+@@ -84,7 +83,6 @@ MainWindow::MainWindow (QSettings& settings, AppConfig& appConfig,
      m_LicenseManager(&licenseManager),
      m_ActivationDialogRunning(false),
  #endif
@@ -89,7 +89,7 @@ index 624d71ba..899cf76e 100644
      m_Settings(settings),
      m_AppConfig(&appConfig),
      m_pSynergy(NULL),
-@@ -103,9 +101,6 @@ MainWindow::MainWindow (QSettings& settings, AppConfig& appConfig,
+@@ -104,9 +102,6 @@ MainWindow::MainWindow (QSettings& settings, AppConfig& appConfig,
      m_pSslCertificate(NULL),
      m_SecureSocket(false)
  {
@@ -99,15 +99,17 @@ index 624d71ba..899cf76e 100644
  
      setupUi(this);
  
-@@ -178,7 +173,6 @@ MainWindow::MainWindow (QSettings& settings, AppConfig& appConfig,
+@@ -179,9 +174,7 @@ MainWindow::MainWindow (QSettings& settings, AppConfig& appConfig,
  #endif
  
  #ifndef SYNERGY_ENTERPRISE
 -    updateZeroconfService();
-     updateAutoConfigWidgets();
+ 
+-    addZeroconfServer(m_AppConfig->autoConfigServer());
  #endif
- }
-@@ -190,10 +184,6 @@ MainWindow::~MainWindow()
+ 
+     updateAutoConfigWidgets();
+@@ -194,10 +187,6 @@ MainWindow::~MainWindow()
          stopDesktop();
      }
  
@@ -118,7 +120,7 @@ index 624d71ba..899cf76e 100644
      saveSettings();
  
      delete m_pSslCertificate;
-@@ -1185,7 +1175,6 @@ void MainWindow::on_m_pGroupClient_toggled(bool on)
+@@ -1215,7 +1204,6 @@ void MainWindow::on_m_pGroupClient_toggled(bool on)
  
      // only call in either client or server toggle, but not both
      // since the toggle functions call eachother indirectly.
@@ -126,7 +128,7 @@ index 624d71ba..899cf76e 100644
  }
  
  void MainWindow::on_m_pGroupServer_toggled(bool on)
-@@ -1225,25 +1214,6 @@ void MainWindow::on_m_pActionAbout_triggered()
+@@ -1255,25 +1243,6 @@ void MainWindow::on_m_pActionAbout_triggered()
      dlg.exec();
  }
  
@@ -152,7 +154,7 @@ index 624d71ba..899cf76e 100644
  void MainWindow::updateAutoConfigWidgets()
  {
      if (appConfig().autoConfig()) {
-@@ -1281,7 +1251,6 @@ void MainWindow::on_m_pActionSettings_triggered()
+@@ -1315,7 +1284,6 @@ void MainWindow::on_m_pActionSettings_triggered()
  
      if (lastAutoConfig != appConfig().autoConfig()) {
          updateAutoConfigWidgets();
@@ -161,7 +163,7 @@ index 624d71ba..899cf76e 100644
  }
  
 diff --git a/src/gui/src/MainWindow.h b/src/gui/src/MainWindow.h
-index e267ccf2..16dda33d 100644
+index f4df8f4..d4b4a08 100644
 --- a/src/gui/src/MainWindow.h
 +++ b/src/gui/src/MainWindow.h
 @@ -56,7 +56,6 @@ class DataDownloader;
@@ -172,9 +174,9 @@ index e267ccf2..16dda33d 100644
  
  class MainWindow : public QMainWindow, public Ui::MainWindowBase
  {
-@@ -119,14 +118,11 @@ class MainWindow : public QMainWindow, public Ui::MainWindowBase
+@@ -120,14 +119,11 @@ class MainWindow : public QMainWindow, public Ui::MainWindowBase
          void autoAddScreen(const QString name);
-         void zeroconfServerDetected(const QString name);
+         void addZeroconfServer(const QString name);
          void updateLocalFingerprint();
 -        Zeroconf& zeroconf() { return *m_pZeroconf; }
  #ifndef SYNERGY_ENTERPRISE
@@ -187,7 +189,7 @@ index e267ccf2..16dda33d 100644
  public slots:
          void setEdition(Edition edition);
  #ifndef SYNERGY_ENTERPRISE
-@@ -208,7 +204,6 @@ public slots:
+@@ -210,7 +206,6 @@ public slots:
          bool m_ActivationDialogRunning;
          QStringList m_PendingClientNames;
  #endif
@@ -196,5 +198,5 @@ index e267ccf2..16dda33d 100644
          AppConfig* m_AppConfig;
          QProcess* m_pSynergy;
 -- 
-2.19.0
+2.21.0
 

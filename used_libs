@@ -3,8 +3,6 @@ libQt5Gui.so.5
 libQt5Network.so.5
 libQt5Widgets.so.5
 libX11.so.6
-libXext.so.6
-libXi.so.6
 libXtst.so.6
 libc.so.6
 libcrypto.so.1.1
