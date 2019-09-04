@@ -1,4 +1,4 @@
-From 659954bac4e9f4156c29c6532d5b3263ba303310 Mon Sep 17 00:00:00 2001
+From 8d7d8f5f66ce7706fcfb955c3a9f81d311323d4a Mon Sep 17 00:00:00 2001
 From: "Brett T. Warden" <brett.t.warden@intel.com>
 Date: Mon, 13 May 2019 15:41:33 -0700
 Subject: [PATCH 2/2] disable zeroconf and dns_sd
@@ -6,9 +6,9 @@ Subject: [PATCH 2/2] disable zeroconf and dns_sd
 ---
  src/gui/CMakeLists.txt     |  4 +++-
  src/gui/gui.pro            | 12 ------------
- src/gui/src/MainWindow.cpp | 32 --------------------------------
+ src/gui/src/MainWindow.cpp | 31 -------------------------------
  src/gui/src/MainWindow.h   |  5 -----
- 4 files changed, 3 insertions(+), 50 deletions(-)
+ 4 files changed, 3 insertions(+), 49 deletions(-)
 
 diff --git a/src/gui/CMakeLists.txt b/src/gui/CMakeLists.txt
 index a612afc..21e5dfc 100644
@@ -70,7 +70,7 @@ index 176d685..2731a8e 100644
      OBJECTS_DIR = tmp/debug
      MOC_DIR = tmp/debug
 diff --git a/src/gui/src/MainWindow.cpp b/src/gui/src/MainWindow.cpp
-index facff7e..8c77424 100644
+index 499ca99..388d634 100644
 --- a/src/gui/src/MainWindow.cpp
 +++ b/src/gui/src/MainWindow.cpp
 @@ -34,7 +34,6 @@
@@ -81,7 +81,7 @@ index facff7e..8c77424 100644
  
  #include <QtCore>
  #include <QtGui>
-@@ -84,7 +83,6 @@ MainWindow::MainWindow (QSettings& settings, AppConfig& appConfig,
+@@ -83,7 +82,6 @@ MainWindow::MainWindow (QSettings& settings, AppConfig& appConfig,
      m_LicenseManager(&licenseManager),
      m_ActivationDialogRunning(false),
  #endif
@@ -89,7 +89,7 @@ index facff7e..8c77424 100644
      m_Settings(settings),
      m_AppConfig(&appConfig),
      m_pSynergy(NULL),
-@@ -104,9 +102,6 @@ MainWindow::MainWindow (QSettings& settings, AppConfig& appConfig,
+@@ -103,9 +101,6 @@ MainWindow::MainWindow (QSettings& settings, AppConfig& appConfig,
      m_pSslCertificate(NULL),
      m_SecureSocket(false)
  {
@@ -99,7 +99,7 @@ index facff7e..8c77424 100644
  
      setupUi(this);
  
-@@ -179,9 +174,7 @@ MainWindow::MainWindow (QSettings& settings, AppConfig& appConfig,
+@@ -178,9 +173,7 @@ MainWindow::MainWindow (QSettings& settings, AppConfig& appConfig,
  #endif
  
  #ifndef SYNERGY_ENTERPRISE
@@ -109,7 +109,7 @@ index facff7e..8c77424 100644
  #endif
  
      updateAutoConfigWidgets();
-@@ -194,10 +187,6 @@ MainWindow::~MainWindow()
+@@ -193,10 +186,6 @@ MainWindow::~MainWindow()
          stopDesktop();
      }
  
@@ -120,7 +120,7 @@ index facff7e..8c77424 100644
      saveSettings();
  
      delete m_pSslCertificate;
-@@ -1215,7 +1204,6 @@ void MainWindow::on_m_pGroupClient_toggled(bool on)
+@@ -1192,7 +1181,6 @@ void MainWindow::on_m_pGroupClient_toggled(bool on)
  
      // only call in either client or server toggle, but not both
      // since the toggle functions call eachother indirectly.
@@ -128,7 +128,7 @@ index facff7e..8c77424 100644
  }
  
  void MainWindow::on_m_pGroupServer_toggled(bool on)
-@@ -1255,25 +1243,6 @@ void MainWindow::on_m_pActionAbout_triggered()
+@@ -1232,25 +1220,6 @@ void MainWindow::on_m_pActionAbout_triggered()
      dlg.exec();
  }
  
@@ -154,16 +154,8 @@ index facff7e..8c77424 100644
  void MainWindow::updateAutoConfigWidgets()
  {
      if (appConfig().autoConfig()) {
-@@ -1315,7 +1284,6 @@ void MainWindow::on_m_pActionSettings_triggered()
- 
-     if (lastAutoConfig != appConfig().autoConfig()) {
-         updateAutoConfigWidgets();
--        updateZeroconfService();
-     }
- }
- 
 diff --git a/src/gui/src/MainWindow.h b/src/gui/src/MainWindow.h
-index f4df8f4..d4b4a08 100644
+index 79b8108..9dc78b5 100644
 --- a/src/gui/src/MainWindow.h
 +++ b/src/gui/src/MainWindow.h
 @@ -56,7 +56,6 @@ class DataDownloader;
@@ -189,14 +181,14 @@ index f4df8f4..d4b4a08 100644
  public slots:
          void setEdition(Edition edition);
  #ifndef SYNERGY_ENTERPRISE
-@@ -210,7 +206,6 @@ public slots:
-         bool m_ActivationDialogRunning;
-         QStringList m_PendingClientNames;
+@@ -211,7 +207,6 @@ public slots:
+         bool                m_ActivationDialogRunning;
+         QStringList         m_PendingClientNames;
  #endif
--        Zeroconf* m_pZeroconf;
-         QSettings& m_Settings;
-         AppConfig* m_AppConfig;
-         QProcess* m_pSynergy;
+-        Zeroconf*           m_pZeroconf;
+         QSettings&          m_Settings;
+         AppConfig*          m_AppConfig;
+         QProcess*           m_pSynergy;
 -- 
-2.21.0
+2.23.0
 
