@@ -4,7 +4,7 @@
 #
 Name     : synergy
 Version  : 1.11.1
-Release  : 10
+Release  : 11
 URL      : https://github.com/symless/synergy-core/archive/v1.11.1-stable/synergy-core-1.11.1.tar.gz
 Source0  : https://github.com/symless/synergy-core/archive/v1.11.1-stable/synergy-core-1.11.1.tar.gz
 Summary  : No detailed summary available
