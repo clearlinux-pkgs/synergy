@@ -1,22 +1,42 @@
-From 8d7d8f5f66ce7706fcfb955c3a9f81d311323d4a Mon Sep 17 00:00:00 2001
+From 0d03f0a90a8612706f538e26e96080dc6a8b481f Mon Sep 17 00:00:00 2001
 From: "Brett T. Warden" <brett.t.warden@intel.com>
 Date: Mon, 13 May 2019 15:41:33 -0700
 Subject: [PATCH 2/2] disable zeroconf and dns_sd
 
 ---
+ CMakeLists.txt             |  8 --------
  src/gui/CMakeLists.txt     |  4 +++-
  src/gui/gui.pro            | 12 ------------
- src/gui/src/MainWindow.cpp | 31 -------------------------------
+ src/gui/src/MainWindow.cpp | 33 ---------------------------------
  src/gui/src/MainWindow.h   |  5 -----
- 4 files changed, 3 insertions(+), 49 deletions(-)
+ 5 files changed, 3 insertions(+), 59 deletions(-)
 
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 6fb199cc5948..a116bcd9ff71 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -248,14 +248,6 @@ if (UNIX)
+             list (APPEND libs Xi)
+         endif()
+ 
+-        if (NOT SYNERGY_ENTERPRISE AND SYNERGY_BUILD_LEGACY_GUI)
+-            set (DnsSdlib "dns_sd.h")
+-            set (CMAKE_EXTRA_INCLUDE_FILES "${CMAKE_EXTRA_INCLUDE_FILES};${DnsSdlib}")
+-            check_include_files ("${DnsSdlib}" HAVE_DNS_SD)
+-            if (NOT HAVE_DNS_SD)
+-                message (FATAL_ERROR "Missing header: " ${DnsSdlib})
+-            endif()
+-        endif()
+     endif()
+ 
+     # For config.h, set some static values; it may be a good idea to make
 diff --git a/src/gui/CMakeLists.txt b/src/gui/CMakeLists.txt
-index a612afc..21e5dfc 100644
+index 362463812630..21048fe435b3 100644
 --- a/src/gui/CMakeLists.txt
 +++ b/src/gui/CMakeLists.txt
-@@ -11,6 +11,9 @@ file (GLOB LEGACY_GUI_UI_FILES src/*.ui)
- file (GLOB LEGACY_ACTIVATION_FILES src/*Activation* src/*License*)
- file (GLOB LEGACY_ZEROCONF_FILES src/Zeroconf*)
+@@ -32,6 +32,9 @@ get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
+ find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${_qt_bin_dir}")
+ find_program(MACDEPLOYQT_EXECUTABLE macdeployqt HINTS "${_qt_bin_dir}")
  
 +# Disable Zeroconf
 +list (REMOVE_ITEM LEGACY_GUI_SOURCE_FILES ${LEGACY_ZEROCONF_FILES})
@@ -24,16 +44,16 @@ index a612afc..21e5dfc 100644
  if (SYNERGY_ENTERPRISE)
      list (REMOVE_ITEM LEGACY_GUI_SOURCE_FILES ${LEGACY_ACTIVATION_FILES})
      list (REMOVE_ITEM LEGACY_GUI_UI_FILES ${LEGACY_ACTIVATION_FILES})
-@@ -45,7 +48,6 @@ if (WIN32)
+@@ -67,7 +70,6 @@ if (WIN32)
+                   PATH_SUFFIXES "Lib/Win32")
      endif()
- 
  elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 -    target_link_libraries (synergy dns_sd)
  endif()
  endif()
  
 diff --git a/src/gui/gui.pro b/src/gui/gui.pro
-index 176d685..2731a8e 100644
+index 7d1427ae34e3..110aea4a5f47 100644
 --- a/src/gui/gui.pro
 +++ b/src/gui/gui.pro
 @@ -51,11 +51,6 @@ SOURCES += src/main.cpp \
@@ -61,35 +81,35 @@ index 176d685..2731a8e 100644
      src/DataDownloader.h \
      src/AddClientDialog.h \
      src/CommandProcess.h \
-@@ -128,7 +117,6 @@ macx {
-     QMAKE_BUNDLE_DATA += QSYNERGY_ICON
-     LIBS += $$MACX_LIBS
+@@ -172,7 +161,6 @@ macx {
+     HEADERS += src/OSXHelpers.h
+     SOURCES += src/OSXHelpers.mm
  }
 -unix:!macx:LIBS += -ldns_sd
  debug { 
      OBJECTS_DIR = tmp/debug
      MOC_DIR = tmp/debug
 diff --git a/src/gui/src/MainWindow.cpp b/src/gui/src/MainWindow.cpp
-index 499ca99..388d634 100644
+index 728d7c50d084..7b38d14b2945 100644
 --- a/src/gui/src/MainWindow.cpp
 +++ b/src/gui/src/MainWindow.cpp
-@@ -34,7 +34,6 @@
+@@ -35,7 +35,6 @@
  #include "QUtility.h"
  #include "ProcessorArch.h"
  #include "SslCertificate.h"
 -#include "Zeroconf.h"
+ #include <QPushButton>
  
- #include <QtCore>
- #include <QtGui>
-@@ -83,7 +82,6 @@ MainWindow::MainWindow (QSettings& settings, AppConfig& appConfig,
+ #if defined(Q_OS_MAC)
+@@ -107,7 +106,6 @@ MainWindow::MainWindow (AppConfig& appConfig,
      m_LicenseManager(&licenseManager),
      m_ActivationDialogRunning(false),
  #endif
 -    m_pZeroconf(nullptr),
-     m_Settings(settings),
      m_AppConfig(&appConfig),
      m_pSynergy(NULL),
-@@ -103,9 +101,6 @@ MainWindow::MainWindow (QSettings& settings, AppConfig& appConfig,
+     m_SynergyState(synergyDisconnected),
+@@ -125,9 +123,6 @@ MainWindow::MainWindow (AppConfig& appConfig,
      m_pSslCertificate(NULL),
      m_SecureSocket(false)
  {
@@ -99,7 +119,7 @@ index 499ca99..388d634 100644
  
      setupUi(this);
  
-@@ -178,9 +173,7 @@ MainWindow::MainWindow (QSettings& settings, AppConfig& appConfig,
+@@ -204,9 +199,7 @@ MainWindow::MainWindow (AppConfig& appConfig,
  #endif
  
  #ifndef SYNERGY_ENTERPRISE
@@ -109,18 +129,27 @@ index 499ca99..388d634 100644
  #endif
  
      updateAutoConfigWidgets();
-@@ -193,10 +186,6 @@ MainWindow::~MainWindow()
+@@ -219,9 +212,6 @@ MainWindow::~MainWindow()
          stopDesktop();
      }
  
 -#ifndef SYNERGY_ENTERPRISE
 -    delete m_pZeroconf;
 -#endif
--
-     saveSettings();
  
      delete m_pSslCertificate;
-@@ -1192,7 +1181,6 @@ void MainWindow::on_m_pGroupClient_toggled(bool on)
+ }
+@@ -359,9 +349,6 @@ void MainWindow::saveSettings()
+ 
+ void MainWindow::zeroConfToggled() {
+ #ifndef SYNERGY_ENTERPRISE
+-    updateZeroconfService();
+-
+-    addZeroconfServer(m_AppConfig->autoConfigServer());
+ 
+     updateAutoConfigWidgets();
+ #endif
+@@ -1188,7 +1175,6 @@ void MainWindow::on_m_pGroupClient_toggled(bool on)
  
      // only call in either client or server toggle, but not both
      // since the toggle functions call eachother indirectly.
@@ -128,8 +157,8 @@ index 499ca99..388d634 100644
  }
  
  void MainWindow::on_m_pGroupServer_toggled(bool on)
-@@ -1232,25 +1220,6 @@ void MainWindow::on_m_pActionAbout_triggered()
-     dlg.exec();
+@@ -1233,25 +1219,6 @@ void MainWindow::on_m_pActionHelp_triggered()
+     QDesktopServices::openUrl(QUrl(HELP_URL));
  }
  
 -void MainWindow::updateZeroconfService()
@@ -155,7 +184,7 @@ index 499ca99..388d634 100644
  {
      if (appConfig().autoConfig()) {
 diff --git a/src/gui/src/MainWindow.h b/src/gui/src/MainWindow.h
-index 79b8108..9dc78b5 100644
+index ae0e72f61379..1fd1fcd2eb52 100644
 --- a/src/gui/src/MainWindow.h
 +++ b/src/gui/src/MainWindow.h
 @@ -56,7 +56,6 @@ class DataDownloader;
@@ -166,10 +195,10 @@ index 79b8108..9dc78b5 100644
  
  class MainWindow : public QMainWindow, public Ui::MainWindowBase
  {
-@@ -120,14 +119,11 @@ class MainWindow : public QMainWindow, public Ui::MainWindowBase
+@@ -119,14 +118,11 @@ class MainWindow : public QMainWindow, public Ui::MainWindowBase
+         void showConfigureServer() { showConfigureServer(""); }
          void autoAddScreen(const QString name);
          void addZeroconfServer(const QString name);
-         void updateLocalFingerprint();
 -        Zeroconf& zeroconf() { return *m_pZeroconf; }
  #ifndef SYNERGY_ENTERPRISE
          LicenseManager& licenseManager() const;
@@ -181,14 +210,14 @@ index 79b8108..9dc78b5 100644
  public slots:
          void setEdition(Edition edition);
  #ifndef SYNERGY_ENTERPRISE
-@@ -211,7 +207,6 @@ public slots:
+@@ -216,7 +212,6 @@ public slots:
          bool                m_ActivationDialogRunning;
          QStringList         m_PendingClientNames;
  #endif
 -        Zeroconf*           m_pZeroconf;
-         QSettings&          m_Settings;
          AppConfig*          m_AppConfig;
          QProcess*           m_pSynergy;
+         int                 m_SynergyState;
 -- 
-2.23.0
+2.29.2
 
