@@ -3,3 +3,5 @@
 libX11-dev
 libXtst-dev
 mesa-dev
+pugixml-dev
+qtbase-dev

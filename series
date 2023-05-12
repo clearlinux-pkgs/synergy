@@ -1,2 +1,1 @@
 0001-Use-target_link_libraries-instead-of-qt5_use_modules.patch
-0002-disable-zeroconf-and-dns_sd.patch

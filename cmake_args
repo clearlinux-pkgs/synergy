@@ -1,2 +1,3 @@
 $(grep -v '^#' ../Build.properties | while read variable; do echo "-D${variable// /}"; done)
 -DBUILD_TESTS=OFF
+-DSYSTEM_PUGIXML=ON
